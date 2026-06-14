@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>LawSuites - Code Documentation</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 850px; margin: 40px auto; padding: 0 20px; color: #111; line-height: 1.7; font-size: 15px; }
+  h1 { font-size: 28px; border-bottom: 2px solid #000; padding-bottom: 10px; }
+  h2 { font-size: 20px; margin-top: 40px; border-bottom: 1px solid #ccc; padding-bottom: 6px; }
+  h3 { font-size: 16px; margin-top: 25px; color: #333; }
+  code { background: #f0f0f0; padding: 2px 6px; font-family: monospace; font-size: 14px; }
+  pre { background: #f4f4f4; padding: 14px; font-family: monospace; font-size: 13px; white-space: pre-wrap; border-left: 3px solid #888; }
+  table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  th { background: #222; color: #fff; padding: 8px 12px; text-align: left; font-size: 13px; }
+  td { padding: 8px 12px; border-bottom: 1px solid #ddd; font-size: 13px; vertical-align: top; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  .note { background: #fffbe6; border-left: 3px solid #f0a500; padding: 10px 14px; margin: 12px 0; }
+  @media print { body { margin: 20px; } }
+</style>
+</head>
+<body>
+
+<h1>LawSuites — Code Documentation</h1>
+<p><strong>Project Type:</strong> University Semester Project — MERN Stack (MongoDB, Express, React, Node.js)</p>
+<p><strong>Purpose:</strong> A Pakistani legal services platform where users describe their problem, an AI recommends the right type of lawyer, and an admin manages the case from start to finish.</p>
+
+<hr/>
+
+<h2>1. What the Project Does (Simple Overview)</h2>
+
+<p>When someone has a legal problem in Pakistan, they often do not know which type of lawyer to hire. LawSuites solves this in 3 steps:</p>
+<ol>
+  <li>User types their problem in plain Urdu or English.</li>
+  <li>The AI reads the text, counts legal keywords, and recommends the best attorney type.</li>
+  <li>The user registers, a case is created automatically, and an admin manages it from a dashboard.</li>
+</ol>
+
+<p><strong>5 Attorney Types:</strong> Criminal Law, Tax &amp; Filing, Real Estate, Family Law, Women's Rights</p>
+<p><strong>2 User Roles:</strong> Client (registers and tracks their case) and Admin (manages all cases)</p>
+
+<hr/>
+
+<h2>2. Full File Structure with Explanation</h2>
+
+<pre>
+LawSuites/
+│
+├── backend/                    ← SERVER SIDE (Node.js + Express)
+│   │
+│   ├── config/
+│   │   └── db.js               ← Connects the app to MongoDB Atlas (cloud database)
+│   │
+│   ├── models/
+│   │   ├── Client.js           ← Blueprint for storing user data in MongoDB
+│   │   └── Case.js             ← Blueprint for storing case + hearing data in MongoDB
+│   │
+│   ├── controllers/
+│   │   ├── aiController.js     ← THE AI ENGINE — reads problem text and scores it
+│   │   ├── clientController.js ← Handles register, login, get/delete users
+│   │   └── caseController.js   ← Handles create, update, delete cases and hearings
+│   │
+│   ├── routes/
+│   │   ├── aiRoutes.js         ← URL: /api/ai/match
+│   │   ├── clientRoutes.js     ← URLs: /api/clients/...
+│   │   └── caseRoutes.js       ← URLs: /api/cases/...
+│   │
+│   ├── middleware/
+│   │   └── auth.js             ← Security check — verifies who is logged in (JWT)
+│   │
+│   ├── scripts/
+│   │   └── seedAdmin.js        ← Run once to create the admin account in the database
+│   │
+│   ├── .env                    ← Secret file: database password, JWT key, port number
+│   └── server.js               ← STARTING POINT — starts the server on port 5000
+│
+└── frontend/                   ← CLIENT SIDE (React.js)
+    └── src/
+        │
+        ├── context/
+        │   └── AuthContext.js  ← Remembers who is logged in across all pages
+        │
+        ├── services/
+        │   └── api.js          ← All API call functions collected in one place (Axios)
+        │
+        ├── components/         ← Reusable pieces used inside pages
+        │   ├── Navbar.js       ← Top navigation bar
+        │   ├── Sidebar.js      ← Side menu inside dashboards
+        │   ├── DataTable.js    ← Reusable table component
+        │   └── AIWidget.js     ← The AI form + result display
+        │
+        ├── pages/              ← Each file = one full page of the website
+        │   ├── Home.js         ← Landing page
+        │   ├── About.js        ← About + legal team
+        │   ├── Contact.js      ← Contact information
+        │   ├── MatchPage.js    ← AI Matchmaker page
+        │   ├── Register.js     ← Client registration form
+        │   ├── Login.js        ← Login screen
+        │   ├── Dashboard.js    ← Client: see own cases and hearings
+        │   ├── AdminPortal.js  ← Admin: manage clients and cases
+        │   └── ManageHearings.js ← Admin: schedule hearing dates
+        │
+        └── App.js              ← Connects all pages to URLs, handles login protection
+</pre>
+
+<hr/>
+
+<h2>3. Backend Files — Simple Explanation</h2>
+
+<h3>server.js — Starting Point</h3>
+<p>This is the first file that runs when you type <code>npm run dev</code>. It does 4 things:</p>
+<ol>
+  <li>Loads secret values from the <code>.env</code> file (database password, port number).</li>
+  <li>Connects to MongoDB Atlas (the cloud database).</li>
+  <li>Registers all URL routes so the app knows what to do when a request arrives.</li>
+  <li>Starts listening for requests on port 5000.</li>
+</ol>
+
+<h3>config/db.js — Database Connection</h3>
+<p>One job only: connect to MongoDB Atlas using the connection string from <code>.env</code>. If connection fails, it stops the server and shows an error. If it works, it prints "MongoDB Connected".</p>
+
+<h3>.env — Secret Configuration File</h3>
+<p>This file is never shared or uploaded to GitHub. It contains:</p>
+<ul>
+  <li><code>MONGO_URI</code> — the MongoDB Atlas connection string (includes username and password)</li>
+  <li><code>JWT_SECRET</code> — a secret key used to sign login tokens</li>
+  <li><code>PORT</code> — 5000 (the port the server runs on)</li>
+  <li><code>CLIENT_URL</code> — http://localhost:3000 (the frontend address)</li>
+</ul>
+
+<hr/>
+
+<h2>4. Models — Database Blueprints</h2>
+
+<p>Models define the exact shape of data stored in MongoDB. Think of them like table definitions in a regular database.</p>
+
+<h3>models/Client.js</h3>
+<p>Stores one document per registered user. Fields:</p>
+<table>
+  <tr><th>Field</th><th>Type</th><th>What it stores</th></tr>
+  <tr><td>fullName</td><td>String</td><td>User's full name</td></tr>
+  <tr><td>email</td><td>String</td><td>Email address (must be unique)</td></tr>
+  <tr><td>phone</td><td>String</td><td>Phone number</td></tr>
+  <tr><td>cnic</td><td>String</td><td>CNIC number (must be unique)</td></tr>
+  <tr><td>password</td><td>String</td><td>Hashed password (bcrypt — never plain text)</td></tr>
+  <tr><td>recommendedType</td><td>String</td><td>Attorney type from AI (Criminal, Tax, etc.)</td></tr>
+  <tr><td>problemDescription</td><td>String</td><td>What the user typed in the AI form</td></tr>
+  <tr><td>role</td><td>String</td><td>"client" or "admin"</td></tr>
+</table>
+
+<h3>models/Case.js</h3>
+<p>Stores one document per case. Fields:</p>
+<table>
+  <tr><th>Field</th><th>Type</th><th>What it stores</th></tr>
+  <tr><td>client</td><td>ObjectId</td><td>Reference to the Client who owns this case</td></tr>
+  <tr><td>caseNumber</td><td>String</td><td>Auto-generated like LS-00001, LS-00002</td></tr>
+  <tr><td>attorneyType</td><td>String</td><td>Type of attorney needed</td></tr>
+  <tr><td>assignedAttorney</td><td>String</td><td>Name of the actual lawyer assigned by admin</td></tr>
+  <tr><td>experienceLevel</td><td>String</td><td>Senior or Junior</td></tr>
+  <tr><td>status</td><td>String</td><td>Pending / Active / Closed / Adjourned</td></tr>
+  <tr><td>description</td><td>String</td><td>Problem description text</td></tr>
+  <tr><td>hearings</td><td>Array</td><td>List of hearing objects (date, note)</td></tr>
+</table>
+
+<div class="note"><strong>Note:</strong> The caseNumber is auto-generated using a Mongoose "pre-save hook". Before saving any new case, it counts how many cases already exist and creates the next number automatically.</div>
+
+<hr/>
+
+<h2>5. Controllers — The Business Logic</h2>
+
+<h3>controllers/aiController.js — The AI Engine</h3>
+<p>This is the most important file. It does NOT use ChatGPT or any paid AI. It is a custom keyword scoring algorithm written in plain JavaScript.</p>
+
+<p><strong>How it works:</strong></p>
+<ol>
+  <li>There are 5 attorney types, each with a list of 80-100 keywords (English + Urdu/Roman Urdu).</li>
+  <li>The user's problem text is converted to lowercase.</li>
+  <li>For each keyword in each attorney type, it checks how many times that word appears in the text.</li>
+  <li>The type with the highest count wins.</li>
+  <li>Confidence % = (top score ÷ total of all scores) × 100.</li>
+  <li>Experience level is decided by checking if the text contains "severe" words (like murder, fraud, kidnapping) → Senior, or mild words (like advice, filing, basic) → Junior.</li>
+</ol>
+
+<p><strong>Urdu keywords used (examples):</strong></p>
+<ul>
+  <li>Criminal: qatl, thana, FIR, katta, dacoity, bail, arrest</li>
+  <li>Real Estate: qabza, zameen, kiraya, fard, intiqal, tenant</li>
+  <li>Family: talaq, khula, mehr, nafqa, bachay, custody</li>
+  <li>Tax: fbr, ntn, strn, filer, returns, gst, audit</li>
+  <li>Women's Rights: harassment, zulm, dowry, domestic violence, saas</li>
+</ul>
+
+<p><strong>What it returns:</strong> recommendedType, experienceLevel, confidence percentage, confidenceLabel (high/medium/low), and allScores (all 5 scores for the breakdown chart).</p>
+
+<h3>controllers/clientController.js</h3>
+<table>
+  <tr><th>Function</th><th>What it does</th></tr>
+  <tr><td>register()</td><td>Creates new user. Hashes password with bcrypt. Auto-creates a case. Returns a JWT token.</td></tr>
+  <tr><td>login()</td><td>Finds user by email, compares hashed password, returns JWT token on success.</td></tr>
+  <tr><td>getMe()</td><td>Returns the logged-in user's profile (without password).</td></tr>
+  <tr><td>getAllClients()</td><td>Admin only. Returns all registered clients (without passwords).</td></tr>
+  <tr><td>deleteClient()</td><td>Admin only. Deletes the client and all their cases from the database.</td></tr>
+</table>
+
+<h3>controllers/caseController.js</h3>
+<table>
+  <tr><th>Function</th><th>What it does</th></tr>
+  <tr><td>getMyCases()</td><td>Returns only the logged-in client's cases.</td></tr>
+  <tr><td>getAllCases()</td><td>Admin only. Returns all cases, with client name and email included.</td></tr>
+  <tr><td>updateCase()</td><td>Admin only. Updates attorney name, type, experience level, and status.</td></tr>
+  <tr><td>addHearing()</td><td>Admin only. Pushes a new hearing date into the case's hearings array.</td></tr>
+  <tr><td>deleteHearing()</td><td>Admin only. Removes a specific hearing from the array by its ID.</td></tr>
+  <tr><td>deleteCase()</td><td>Admin only. Permanently deletes a case.</td></tr>
+</table>
+
+<hr/>
+
+<h2>6. Middleware — Security Guard</h2>
+
+<h3>middleware/auth.js</h3>
+<p>Every protected route passes through this file first, before reaching the controller.</p>
+
+<p><strong>protect()</strong> — Checks if a valid JWT token is attached to the request header. If yes, it reads the token, finds the user's ID and role, and stores it in <code>req.user</code>. If no token or invalid token → returns 401 Unauthorized.</p>
+
+<p><strong>adminOnly()</strong> — Runs after protect(). Checks if <code>req.user.role === "admin"</code>. If not → returns 403 Forbidden.</p>
+
+<p><strong>How JWT works in simple terms:</strong></p>
+<ol>
+  <li>User logs in → server creates a token (like a digital pass) and sends it back.</li>
+  <li>Frontend saves the token in localStorage.</li>
+  <li>Every API request includes the token in the header: <code>Authorization: Bearer &lt;token&gt;</code></li>
+  <li>auth.js verifies the token on every request.</li>
+  <li>If token is valid → request is allowed. If not → request is blocked.</li>
+</ol>
+
+<hr/>
+
+<h2>7. Routes — URL Mapping</h2>
+
+<p>Routes simply connect a URL to the correct controller function. They also apply middleware where needed.</p>
+
+<table>
+  <tr><th>Method</th><th>URL</th><th>Middleware</th><th>Controller Function</th></tr>
+  <tr><td>POST</td><td>/api/ai/match</td><td>None (public)</td><td>aiController.matchAttorney</td></tr>
+  <tr><td>POST</td><td>/api/clients/register</td><td>None (public)</td><td>clientController.register</td></tr>
+  <tr><td>POST</td><td>/api/clients/login</td><td>None (public)</td><td>clientController.login</td></tr>
+  <tr><td>GET</td><td>/api/clients/me</td><td>protect</td><td>clientController.getMe</td></tr>
+  <tr><td>GET</td><td>/api/clients</td><td>protect + adminOnly</td><td>clientController.getAllClients</td></tr>
+  <tr><td>DELETE</td><td>/api/clients/:id</td><td>protect + adminOnly</td><td>clientController.deleteClient</td></tr>
+  <tr><td>GET</td><td>/api/cases/my</td><td>protect</td><td>caseController.getMyCases</td></tr>
+  <tr><td>GET</td><td>/api/cases</td><td>protect + adminOnly</td><td>caseController.getAllCases</td></tr>
+  <tr><td>PUT</td><td>/api/cases/:id</td><td>protect + adminOnly</td><td>caseController.updateCase</td></tr>
+  <tr><td>DELETE</td><td>/api/cases/:id</td><td>protect + adminOnly</td><td>caseController.deleteCase</td></tr>
+  <tr><td>POST</td><td>/api/cases/:id/hearings</td><td>protect + adminOnly</td><td>caseController.addHearing</td></tr>
+  <tr><td>DELETE</td><td>/api/cases/:id/hearings/:hid</td><td>protect + adminOnly</td><td>caseController.deleteHearing</td></tr>
+</table>
+
+<hr/>
+
+<h2>8. scripts/seedAdmin.js — Create Admin Account</h2>
+
+<p>This file is run <strong>only once</strong> with the command <code>node scripts/seedAdmin.js</code>. It creates the admin account in the database:</p>
+<ul>
+  <li>Email: <code>admin@lawsuites.pk</code></li>
+  <li>Password: <code>Admin@1234</code></li>
+  <li>Role: <code>admin</code></li>
+</ul>
+<p>After this script runs, you log in at <code>/login</code> with these credentials to access the Admin Portal.</p>
+
+<hr/>
+
+<h2>9. Frontend Files — Simple Explanation</h2>
+
+<h3>services/api.js — Central API Hub</h3>
+<p>All API calls go through this one file. It uses Axios (a tool for making HTTP requests). Two things happen automatically:</p>
+<ul>
+  <li><strong>Request interceptor:</strong> Before every request, it reads the token from localStorage and adds it to the header. So you never have to do it manually.</li>
+  <li><strong>Response interceptor:</strong> If any request returns 401 (token expired or invalid), it automatically clears the storage and sends the user to the login page.</li>
+</ul>
+
+<h3>context/AuthContext.js — Global Login State</h3>
+<p>React's Context API is used here so that all pages can know if someone is logged in, without passing data down through props manually.</p>
+<p>It provides 4 things to every component:</p>
+<ul>
+  <li><code>user</code> — the logged-in user object (name, role, id) or null</li>
+  <li><code>login(token, userData)</code> — saves token and user to localStorage</li>
+  <li><code>logout()</code> — clears localStorage and redirects to home</li>
+  <li><code>isAdmin</code> — true if user.role is "admin"</li>
+</ul>
+
+<h3>App.js — Routes and Protection</h3>
+<p>This file connects all pages to their URLs using React Router. It also contains two guard components:</p>
+<ul>
+  <li><strong>PrivateRoute:</strong> If user is not logged in → redirect to /login. If user is logged in but not admin and tries to visit /admin → redirect to /dashboard.</li>
+  <li><strong>PublicRoute:</strong> If user is already logged in and tries to visit /login or /register → redirect them to their dashboard automatically.</li>
+</ul>
+
+<hr/>
+
+<h2>10. Pages — What Each Page Does</h2>
+
+<table>
+  <tr><th>Page File</th><th>URL</th><th>Who Can Access</th><th>What it does</th></tr>
+  <tr><td>Home.js</td><td>/</td><td>Everyone</td><td>Landing page. Shows practice areas, stats, team, testimonials, footer.</td></tr>
+  <tr><td>About.js</td><td>/about</td><td>Everyone</td><td>Mission statement, how it works, legal team of 8 lawyers.</td></tr>
+  <tr><td>Contact.js</td><td>/contact</td><td>Everyone</td><td>Office address, phone, email, and a contact form.</td></tr>
+  <tr><td>MatchPage.js</td><td>/match</td><td>Everyone</td><td>Shows the AI Widget. User types problem and gets attorney recommendation.</td></tr>
+  <tr><td>Register.js</td><td>/register</td><td>Guests only</td><td>6-field registration form. AI result is carried over and pre-filled automatically.</td></tr>
+  <tr><td>Login.js</td><td>/login</td><td>Guests only</td><td>Email + password form for both client and admin.</td></tr>
+  <tr><td>Dashboard.js</td><td>/dashboard</td><td>Client only</td><td>Shows client's case number, attorney, status, and all hearing dates.</td></tr>
+  <tr><td>AdminPortal.js</td><td>/admin</td><td>Admin only</td><td>Stats overview, list of all clients, list of all cases with edit modal.</td></tr>
+  <tr><td>ManageHearings.js</td><td>/admin/hearings</td><td>Admin only</td><td>Admin can add and delete hearing dates for any case.</td></tr>
+</table>
+
+<hr/>
+
+<h2>11. Components — Reusable Building Blocks</h2>
+
+<h3>Navbar.js</h3>
+<p>The top navigation bar shown on all pages. Links change based on login status. If client is logged in → shows Dashboard link. If admin is logged in → shows Admin Portal link. If not logged in → shows Login and Register.</p>
+
+<h3>Sidebar.js</h3>
+<p>The left-side menu shown inside dashboard pages. Shows different links depending on whether the user is a client or admin. Has a logout button at the bottom.</p>
+
+<h3>DataTable.js</h3>
+<p>A reusable table component. You pass it two things: column definitions and data array. It renders a clean table with alternating row colors. Used in AdminPortal to show clients and cases.</p>
+
+<h3>AIWidget.js</h3>
+<p>The AI Matchmaker form component. Contains:</p>
+<ul>
+  <li>A textarea where the user types their problem</li>
+  <li>A submit button that calls <code>/api/ai/match</code></li>
+  <li>A result card showing: attorney type, experience level, confidence %, allocated attorney name, and a score breakdown bar chart</li>
+</ul>
+
+<hr/>
+
+<h2>12. How Data Flows Through the App</h2>
+
+<p><strong>Example: User types a problem and registers</strong></p>
+<ol>
+  <li>User types problem text in AIWidget.js</li>
+  <li>AIWidget calls <code>aiAPI.match(text)</code> from api.js</li>
+  <li>api.js sends POST request to <code>/api/ai/match</code></li>
+  <li>Server receives it in aiRoutes.js → calls aiController.matchAttorney()</li>
+  <li>aiController scores the text, returns recommended type + confidence</li>
+  <li>AIWidget shows the result to the user</li>
+  <li>User clicks Register → goes to Register.js with the result pre-filled</li>
+  <li>User fills form and submits → calls <code>clientAPI.register()</code></li>
+  <li>Server: clientController.register() hashes password, creates Client document, creates Case document, returns JWT</li>
+  <li>AuthContext.login() saves token and user to localStorage</li>
+  <li>App.js redirects to /dashboard</li>
+  <li>Dashboard.js calls <code>caseAPI.getMyCases()</code> → shows the case</li>
+</ol>
+
+<hr/>
+
+<h2>13. Technology Used and Why</h2>
+
+<table>
+  <tr><th>Technology</th><th>What it is</th><th>Why we used it</th></tr>
+  <tr><td>React.js</td><td>Frontend JavaScript framework</td><td>Builds fast, interactive UI using components</td></tr>
+  <tr><td>React Router v6</td><td>Page navigation for React</td><td>Allows URL-based navigation without page reload</td></tr>
+  <tr><td>Axios</td><td>HTTP request library</td><td>Cleaner than fetch(), supports interceptors</td></tr>
+  <tr><td>react-hot-toast</td><td>Notification library</td><td>Shows success/error messages to the user</td></tr>
+  <tr><td>Node.js</td><td>JavaScript runtime for backend</td><td>Runs JavaScript on the server</td></tr>
+  <tr><td>Express.js</td><td>Web framework for Node.js</td><td>Creates API routes easily</td></tr>
+  <tr><td>MongoDB Atlas</td><td>Cloud NoSQL database</td><td>Free tier, flexible schema, no local install needed</td></tr>
+  <tr><td>Mongoose</td><td>MongoDB object modeling</td><td>Provides schema, validation, and easy queries</td></tr>
+  <tr><td>JWT (jsonwebtoken)</td><td>Authentication token</td><td>Stateless auth — no need to store sessions on server</td></tr>
+  <tr><td>bcryptjs</td><td>Password hashing</td><td>Passwords are never stored as plain text</td></tr>
+  <tr><td>dotenv</td><td>Environment variable loader</td><td>Keeps secrets out of the code</td></tr>
+  <tr><td>nodemon</td><td>Auto-restart tool</td><td>Server restarts automatically when code changes</td></tr>
+</table>
+
+<hr/>
+
+<h2>14. How to Run the Project</h2>
+
+<p><strong>Step 1 — Start the Backend</strong></p>
+<pre>
+cd backend
+npm install
+node scripts/seedAdmin.js      (run this only the first time)
+npm run dev                    (starts server on port 5000)
+</pre>
+
+<p><strong>Step 2 — Start the Frontend</strong></p>
+<pre>
+cd frontend
+npm install
+npm start                      (opens website on http://localhost:3000)
+</pre>
+
+<p><strong>Admin Login Credentials:</strong></p>
+<ul>
+  <li>Email: <code>admin@lawsuites.pk</code></li>
+  <li>Password: <code>Admin@1234</code></li>
+</ul>
+
+<div class="note">
+<strong>Important:</strong> The backend must be running before the frontend. If the backend is not running, all API calls will fail and the frontend will show errors.
+</div>
+
+<hr/>
+
+<h2>15. Important Problems We Solved During Development</h2>
+
+<table>
+  <tr><th>Problem</th><th>Cause</th><th>Solution</th></tr>
+  <tr><td>MongoDB would not connect</td><td>Node.js could not resolve the SRV DNS address</td><td>Switched from mongodb+srv:// to a direct 3-shard connection string</td></tr>
+  <tr><td>Connection timed out</td><td>MongoDB Atlas blocked unknown IPs</td><td>Added 0.0.0.0/0 in Atlas Network Access (allow anywhere)</td></tr>
+  <tr><td>Wrong replicaSet name</td><td>We guessed the name incorrectly</td><td>Connected with directConnection=true and ran isMaster command to find the real name</td></tr>
+  <tr><td>Port 5000 already in use</td><td>Old backend process was still running</td><td>Used taskkill to stop the old process, then restarted</td></tr>
+  <tr><td>AI always gave low confidence</td><td>Too few keywords, thresholds were too high</td><td>Expanded to 430+ keywords including Urdu, lowered threshold to 35%</td></tr>
+  <tr><td>Admin tab not syncing with URL</td><td>Tab was stored in component state, not derived from URL</td><td>Used useLocation() to read the current URL and derive the active tab from it</td></tr>
+  <tr><td>seedAdmin.js could not find .env</td><td>Path was relative, broke when run from different directories</td><td>Used path.join(__dirname, '../.env') for absolute path</td></tr>
+</table>
+
+<hr/>
+<p style="text-align:center; color:#888; font-size:13px; margin-top:40px;">LawSuites — University Semester Project — MERN Stack</p>
+
+</body>
+</html>
