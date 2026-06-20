@@ -4,7 +4,6 @@ import { useAuth } from '../context/AuthContext';
 const clientLinks = [{ to: '/dashboard', label: 'My Cases', icon: '📋' }];
 
 const adminLinks = [
-  { to: '/admin', label: 'Overview', icon: '🏠' },
   { to: '/admin/clients', label: 'Clients', icon: '👥' },
   { to: '/admin/cases', label: 'Cases', icon: '📁' },
   { to: '/admin/hearings', label: 'Hearings', icon: '📅' },
@@ -53,7 +52,12 @@ export default function Sidebar() {
 
       <div style={styles.bottom}>
         <div style={styles.divider} />
-        <button onClick={handleLogout} style={styles.logoutBtn}>
+        <button
+          onClick={handleLogout}
+          style={styles.logoutBtn}
+          onMouseEnter={e => { e.currentTarget.style.color = '#c9a84c'; e.currentTarget.style.borderColor = '#c9a84c'; }}
+          onMouseLeave={e => { e.currentTarget.style.color = '#4b5563'; e.currentTarget.style.borderColor = '#1e2d45'; }}
+        >
           <span>↩</span> Logout
         </button>
       </div>

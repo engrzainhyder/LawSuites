@@ -21,7 +21,7 @@ const PrivateRoute = ({ children, adminOnly = false }) => {
 
 const PublicRoute = ({ children }) => {
   const { user, isAdmin } = useAuth();
-  if (user) return <Navigate to={isAdmin ? '/admin' : '/dashboard'} replace />;
+  if (user) return <Navigate to={isAdmin ? '/admin/clients' : '/dashboard'} replace />;
   return children;
 };
 
@@ -36,7 +36,7 @@ function AppRoutes() {
         <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
         <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
         <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/admin" element={<PrivateRoute adminOnly><AdminPortal /></PrivateRoute>} />
+        <Route path="/admin" element={<PrivateRoute adminOnly><Navigate to="/admin/clients" replace /></PrivateRoute>} />
         <Route path="/admin/clients" element={<PrivateRoute adminOnly><AdminPortal /></PrivateRoute>} />
         <Route path="/admin/cases" element={<PrivateRoute adminOnly><AdminPortal /></PrivateRoute>} />
         <Route path="/admin/hearings" element={<PrivateRoute adminOnly><ManageHearings /></PrivateRoute>} />

@@ -7,6 +7,14 @@ import toast from 'react-hot-toast';
 
 const STATUS_COLORS = { Pending: '#f59e0b', Active: '#10b981', Closed: '#6b7280', Adjourned: '#ef4444' };
 
+const ATTORNEY_MAP = {
+  Criminal:     'Adv. Ghufraan',
+  Tax:          'Adv. Zain',
+  RealEstate:   'Adv. Usman',
+  Family:       'Adv. Anas',
+  WomensRights: 'Adv. Javeria',
+};
+
 export default function AdminPortal() {
   const { pathname } = useLocation();
   const tab = pathname === '/admin/cases' ? 'cases' : 'clients';
@@ -43,7 +51,6 @@ export default function AdminPortal() {
   const saveCase = async () => {
     try {
       await caseAPI.update(editCase._id, {
-        assignedAttorney: editCase.assignedAttorney,
         experienceLevel: editCase.experienceLevel,
         status: editCase.status,
         attorneyType: editCase.attorneyType,
@@ -137,19 +144,21 @@ export default function AdminPortal() {
                 <span style={styles.caseNum}>{editCase.caseNumber}</span>
               </div>
               <div style={styles.modalClient}>
-                Client: <strong>{editCase.client?.fullName || '—'}</strong>
+                Client: <strong style={{ color: '#e8d5a3' }}>{editCase.client?.fullName || '—'}</strong>
               </div>
 
               <div style={styles.modalGrid}>
-                <div style={styles.mField}>
-                  <label style={styles.mLabel}>Assigned Attorney</label>
-                  <input style={styles.mInput} type="text" placeholder="Full name of attorney" value={editCase.assignedAttorney || ''} onChange={e => setEditCase({ ...editCase, assignedAttorney: e.target.value })} />
-                </div>
                 <div style={styles.mField}>
                   <label style={styles.mLabel}>Attorney Type</label>
                   <select style={styles.mInput} value={editCase.attorneyType || ''} onChange={e => setEditCase({ ...editCase, attorneyType: e.target.value })}>
                     {['Criminal', 'Tax', 'RealEstate', 'Family', 'WomensRights'].map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
+                </div>
+                <div style={styles.mField}>
+                  <label style={styles.mLabel}>Assigned Attorney</label>
+                  <div style={{ ...styles.mInput, background: '#0b0f1a', color: '#c9a84c', display: 'flex', alignItems: 'center', fontWeight: 600, border: '1px solid #1e2d45' }}>
+                    {ATTORNEY_MAP[editCase.attorneyType] || '—'}
+                  </div>
                 </div>
                 <div style={styles.mField}>
                   <label style={styles.mLabel}>Experience Level</label>
@@ -194,17 +203,17 @@ const styles = {
   loading: { padding: '3rem', textAlign: 'center', color: '#9ca3af' },
   editBtn: { background: '#1e2d45', color: '#c9a84c', border: 'none', padding: '0.3rem 0.75rem', borderRadius: '3px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, fontFamily: "'Inter', sans-serif" },
   delBtn: { background: '#fef2f2', color: '#ef4444', border: '1px solid #fecaca', padding: '0.3rem 0.75rem', borderRadius: '3px', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600, fontFamily: "'Inter', sans-serif" },
-  overlay: { position: 'fixed', inset: 0, background: 'rgba(11,15,26,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, backdropFilter: 'blur(2px)' },
-  modal: { background: '#fff', borderRadius: '4px', padding: '2rem', width: '100%', maxWidth: '500px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' },
-  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' },
-  modalTitle: { fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#0b0f1a', fontSize: '1.2rem' },
-  caseNum: { background: '#0b0f1a', color: '#c9a84c', fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.7rem', borderRadius: '20px' },
-  modalClient: { color: '#6b7280', fontSize: '0.85rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid #f0ebe3' },
-  modalGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' },
-  mField: { display: 'flex', flexDirection: 'column', gap: '0.35rem' },
-  mLabel: { fontSize: '0.75rem', fontWeight: 700, color: '#374151', letterSpacing: '0.05em', textTransform: 'uppercase' },
-  mInput: { padding: '0.65rem 0.8rem', border: '1px solid #d5cfc7', borderRadius: '3px', fontSize: '0.88rem', fontFamily: "'Inter', sans-serif", background: '#faf8f5', color: '#0b0f1a', width: '100%', boxSizing: 'border-box' },
-  mActions: { display: 'flex', gap: '0.8rem' },
-  saveBtn: { flex: 1, background: 'linear-gradient(135deg, #c9a84c, #a07830)', color: '#0b0f1a', border: 'none', padding: '0.75rem', borderRadius: '3px', fontWeight: 700, cursor: 'pointer', fontFamily: "'Inter', sans-serif" },
-  cancelBtn: { flex: 1, background: '#f9f5ef', color: '#6b7280', border: '1px solid #d5cfc7', padding: '0.75rem', borderRadius: '3px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif" },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(5,8,15,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, backdropFilter: 'blur(6px)' },
+  modal: { background: '#0b0f1a', border: '1px solid #1e2d45', borderRadius: '4px', padding: '0', width: '100%', maxWidth: '500px', boxShadow: '0 30px 80px rgba(0,0,0,0.6)', overflow: 'hidden' },
+  modalHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem', padding: '1.8rem 2rem 0' },
+  modalTitle: { fontFamily: "'Playfair Display', serif", fontWeight: 700, color: '#e8d5a3', fontSize: '1.35rem' },
+  caseNum: { background: 'linear-gradient(135deg, #c9a84c, #a07830)', color: '#0b0f1a', fontSize: '0.72rem', fontWeight: 800, padding: '0.25rem 0.8rem', borderRadius: '20px', letterSpacing: '0.05em' },
+  modalClient: { color: '#4b5563', fontSize: '0.83rem', margin: '0.3rem 2rem 0', paddingBottom: '1.2rem', borderBottom: '1px solid #1e2d45' },
+  modalGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', margin: '1.4rem 2rem', },
+  mField: { display: 'flex', flexDirection: 'column', gap: '0.4rem' },
+  mLabel: { fontSize: '0.68rem', fontWeight: 700, color: '#c9a84c', letterSpacing: '0.12em', textTransform: 'uppercase' },
+  mInput: { padding: '0.7rem 0.9rem', border: '1px solid #1e2d45', borderRadius: '3px', fontSize: '0.88rem', fontFamily: "'Inter', sans-serif", background: '#111827', color: '#e8d5a3', width: '100%', boxSizing: 'border-box', outline: 'none' },
+  mActions: { display: 'flex', gap: '0.8rem', padding: '1.2rem 2rem 1.8rem', borderTop: '1px solid #1e2d45', marginTop: '0.4rem' },
+  saveBtn: { flex: 1, background: 'linear-gradient(135deg, #c9a84c, #a07830)', color: '#0b0f1a', border: 'none', padding: '0.8rem', borderRadius: '3px', fontWeight: 800, cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem', letterSpacing: '0.03em' },
+  cancelBtn: { flex: 1, background: 'transparent', color: '#4b5563', border: '1px solid #1e2d45', padding: '0.8rem', borderRadius: '3px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Inter', sans-serif", fontSize: '0.88rem' },
 };

@@ -13,7 +13,7 @@ const Client = require('../models/Client');
     email: 'admin@lawsuites.pk',
     phone: '03000000000',
     cnic: '0000000000000',
-    password: await bcrypt.hash('Admin@1234', 10),
+    password: await bcrypt.hash('Admin@1234', 12),
     role: 'admin',
   });
   console.log('Admin seeded: admin@lawsuites.pk / Admin@1234');
